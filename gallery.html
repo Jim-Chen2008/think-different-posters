@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Think Different 海报画廊</title>
+<style>
+  :root{
+    --bg:#0d0d0f; --panel:#16161a; --card:#1c1c22; --border:#2a2a33;
+    --text:#e8e8ee; --muted:#9a9aa5; --accent:#e5e5ea;
+    --apple:#a3a3ad; --gold:#d4af37;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    min-height:100vh;
+  }
+  header{
+    padding:48px 24px 28px; text-align:center;
+    background:linear-gradient(180deg,#151519 0%,var(--bg) 100%);
+    border-bottom:1px solid var(--border);
+  }
+  header .logo{
+    font-size:15px; letter-spacing:3px; color:var(--apple);
+    text-transform:uppercase; margin-bottom:14px;
+  }
+  header h1{
+    font-size:34px; font-weight:600; letter-spacing:1px;
+  }
+  header h1 em{font-style:normal;color:var(--gold)}
+  header p{color:var(--muted); margin-top:10px; font-size:14px}
+  .stats{margin-top:18px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap}
+  .stats span{
+    background:var(--panel); border:1px solid var(--border);
+    padding:6px 14px; border-radius:20px; font-size:13px; color:var(--muted);
+  }
+  .stats b{color:var(--text); font-weight:600}
+  main{max-width:1280px; margin:0 auto; padding:32px 24px 60px}
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:18px;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden; cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 12px 30px rgba(0,0,0,.5);
+    border-color:#3a3a46;
+  }
+  .card .thumb{
+    aspect-ratio:2/3; width:100%; object-fit:cover;
+    background:#0a0a0c; display:block;
+  }
+  .card .info{padding:12px 14px}
+  .card .info h3{font-size:15px; font-weight:600}
+  .card .info .res{font-size:12px; color:var(--muted); margin-top:4px}
+  .card .badge{
+    position:absolute; top:10px; left:10px; font-size:10px;
+    padding:3px 8px; border-radius:10px; font-weight:700; letter-spacing:.5px;
+  }
+  .thumb-wrap{position:relative}
+  .b-hd{background:var(--gold); color:#111}
+  .b-sd{background:#5a5a66; color:#eee}
+  .b-low{background:#8b3a3a; color:#fff}
+  /* Lightbox */
+  .lightbox{
+    position:fixed; inset:0; background:rgba(0,0,0,.92);
+    display:none; align-items:center; justify-content:center; z-index:100;
+    flex-direction:column; padding:40px;
+  }
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:92vw; max-height:80vh; object-fit:contain; border-radius:8px}
+  .lightbox .cap{color:var(--text); margin-top:16px; font-size:16px; font-weight:600}
+  .lightbox .sub{color:var(--muted); margin-top:4px; font-size:13px}
+  .lightbox .close{
+    position:absolute; top:20px; right:28px; font-size:34px; cursor:pointer;
+    color:var(--muted); transition:color .2s; background:none; border:none;
+  }
+  .lightbox .close:hover{color:#fff}
+  .lightbox .nav{
+    position:absolute; top:50%; transform:translateY(-50%);
+    font-size:40px; cursor:pointer; color:var(--muted); user-select:none;
+    padding:20px; transition:color .2s;
+  }
+  .lightbox .nav:hover{color:#fff}
+  .lightbox .prev{left:10px}
+  .lightbox .next{right:10px}
+  footer{text-align:center; color:var(--muted); font-size:12px; padding:20px; border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">The Crazy Ones</div>
+  <h1>Think <em>Different</em> 海报画廊</h1>
+  <p>苹果 1997 广告活动 · 个人收藏/学习用途</p>
+  <div class="stats">
+    <span>共 <b id="count">0</b> 张海报</span>
+    <span>高清 HD+ <b id="cHd">0</b></span>
+    <span>标清 SD <b id="cSd">0</b></span>
+    <span>低清 <b id="cLow">0</b></span>
+  </div>
+</header>
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="lightbox" id="lightbox">
+  <button class="close" id="lbClose" aria-label="关闭">×</button>
+  <div class="nav prev" id="lbPrev">‹</div>
+  <img id="lbImg" alt="海报">
+  <div class="cap" id="lbCap"></div>
+  <div class="sub" id="lbSub"></div>
+  <div class="nav next" id="lbNext">›</div>
+</div>
+
+<footer>© 仅供个人收藏学习 · Think Different 为 Apple Inc. 版权素材 · 请勿商用</footer>
+
+<script>
+const posters = [
+  {f:"Einstein_etsy.jpg", n:"Albert Einstein 爱因斯坦", r:"2166×2174", t:"hd"},
+  {f:"RichardFeynman.jpg", n:"Richard Feynman 理查德·费曼", r:"3667×2864", t:"hd"},
+  {f:"MuhammadAli.jpg", n:"Muhammad Ali 穆罕默德·阿里", r:"2837×2837", t:"hd"},
+  {f:"MuhammadAli2.jpg", n:"Muhammad Ali (2) 阿里", r:"1859×2788", t:"hd"},
+  {f:"ThomasEdison.jpg", n:"Thomas Edison 托马斯·爱迪生", r:"2048×1365", t:"hd"},
+  {f:"BuzzAldrin.jpg", n:"Buzz Aldrin 巴兹·奥尔德林", r:"1946×1946", t:"hd"},
+  {f:"SteveJobs.jpg", n:"Steve Jobs 史蒂夫·乔布斯", r:"1946×1946", t:"hd"},
+  {f:"FrankSinatra.jpg", n:"Frank Sinatra 弗兰克·辛纳屈", r:"1800×1262", t:"hd"},
+  {f:"MilesDavis.jpg", n:"Miles Davis 迈尔斯·戴维斯", r:"1800×2644", t:"hd"},
+  {f:"Gandhi.jpg", n:"Mahatma Gandhi 甘地", r:"1080×1675", t:"hd"},
+  {f:"MartinLutherKing.jpg", n:"Martin Luther King Jr. 马丁·路德·金", r:"1049×1200", t:"hd"},
+  {f:"PabloPicasso.jpg", n:"Pablo Picasso 毕加索", r:"1080×1619", t:"hd"},
+  {f:"JohnLennon.jpg", n:"John Lennon 约翰·列侬", r:"1080×1640", t:"hd"},
+  {f:"AlfredHitchcock.jpg", n:"Alfred Hitchcock 希区柯克", r:"1080×1616", t:"hd"},
+  {f:"MariaCallas.jpg", n:"Maria Callas 玛丽亚·卡拉斯", r:"1080×1595", t:"hd"},
+  {f:"AmeliaEarhart.jpg", n:"Amelia Earhart 阿梅莉亚·埃尔哈特", r:"1080×1663", t:"hd"},
+  {f:"JamesWatson.jpg", n:"James Watson 詹姆斯·沃森", r:"1080×1673", t:"hd"},
+  {f:"CesarChavez.jpg", n:"Cesar Chavez 塞萨尔·查韦斯", r:"1080×1663", t:"hd"},
+  {f:"JoanBaez.jpg", n:"Joan Baez 琼·贝兹", r:"1080×1627", t:"hd"},
+  {f:"MarthaGraham.jpg", n:"Martha Graham 玛莎·葛兰姆", r:"1080×1625", t:"hd"},
+  {f:"JimHenson.jpg", n:"Jim Henson 吉姆·汉森", r:"1080×1663", t:"hd"},
+  {f:"TedTurner.jpg", n:"Ted Turner 泰德·透纳", r:"1080×1646", t:"hd"},
+  {f:"Einstein_postergroup.jpg", n:"Albert Einstein (2) 爱因斯坦", r:"1080×1663", t:"hd"},
+  {f:"BobDylan.jpg", n:"Bob Dylan 鲍勃·迪伦", r:"900×1200", t:"sd"},
+  {f:"CharlieChaplin.jpg", n:"Charlie Chaplin 查理·卓别林", r:"800×800", t:"sd"},
+  {f:"JackieRobinson.jpg", n:"Jackie Robinson 杰基·罗宾森", r:"310×310", t:"low"},
+  {f:"JaneGoodall.jpg", n:"Jane Goodall 珍·古道尔", r:"293×293", t:"low"}
+];
+
+const grid = document.getElementById('grid');
+const badgeLabel = {hd:'HD', sd:'SD', low:'LOW'};
+const badgeClass = {hd:'b-hd', sd:'b-sd', low:'b-low'};
+
+posters.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="thumb-wrap">
+      <span class="badge ${badgeClass[p.t]}">${badgeLabel[p.t]}</span>
+      <img class="thumb" src="${p.f}" alt="${p.n}" loading="lazy">
+    </div>
+    <div class="info"><h3>${p.n}</h3><div class="res">${p.r} px</div></div>`;
+  card.addEventListener('click', () => openLightbox(i));
+  grid.appendChild(card);
+});
+
+document.getElementById('count').textContent = posters.length;
+document.getElementById('cHd').textContent = posters.filter(p=>p.t==='hd').length;
+document.getElementById('cSd').textContent = posters.filter(p=>p.t==='sd').length;
+document.getElementById('cLow').textContent = posters.filter(p=>p.t==='low').length;
+
+const lb = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbCap = document.getElementById('lbCap');
+const lbSub = document.getElementById('lbSub');
+let cur = 0;
+
+function openLightbox(i){
+  cur = i;
+  const p = posters[i];
+  lbImg.src = p.f;
+  lbCap.textContent = p.n;
+  lbSub.textContent = p.r + ' px';
+  lb.classList.add('open');
+}
+function close(){ lb.classList.remove('open'); }
+function move(d){ openLightbox((cur + d + posters.length) % posters.length); }
+
+document.getElementById('lbClose').addEventListener('click', close);
+document.getElementById('lbPrev').addEventListener('click', e=>{e.stopPropagation(); move(-1);});
+document.getElementById('lbNext').addEventListener('click', e=>{e.stopPropagation(); move(1);});
+lb.addEventListener('click', e=>{ if(e.target===lb) close(); });
+document.addEventListener('keydown', e=>{
+  if(!lb.classList.contains('open')) return;
+  if(e.key==='Escape') close();
+  if(e.key==='ArrowLeft') move(-1);
+  if(e.key==='ArrowRight') move(1);
+});
+</script>
+</body>
+</html>
